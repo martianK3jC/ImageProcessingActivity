@@ -52,9 +52,9 @@ namespace ImageProcessingActivity
             if (originalPicBox.Image == null)
             {
                 MessageBox.Show("Please load an image first");
+                return;
             }
-            else
-            {
+            
                 //Step 2: Convert to Bitmap for pixel manipulation
                 Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
 
@@ -80,7 +80,7 @@ namespace ImageProcessingActivity
                 //Step 5: Display the copied image
                 editedPicBox.Image = copiedBitmap;
                 editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
-            }       
+                   
         }
 
         private void grayBtn_Click(object sender, EventArgs e)
@@ -91,9 +91,9 @@ namespace ImageProcessingActivity
             if (originalPicBox.Image == null)
             {
                 MessageBox.Show("Please load an image first");
+                return;
             }
-            else
-            {
+            
                 //Step 2: Convert to Bitmap for pixel manipulation
                 Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
 
@@ -127,9 +127,56 @@ namespace ImageProcessingActivity
                 //Step 5: Display the grayscale image
                 editedPicBox.Image = grayscaleBitmap;
                 editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+
+
+        }
+
+        private void invertBtn_Click(object sender, EventArgs e)
+        {
+            /*
+             Formula for inverted:
+                inverted red = 255 - r
+                inverted green = 255 - G
+                inverted blue = 255 - B
+             */
+            //Step 1: Check if we have an image to process
+            if (originalPicBox.Image == null) 
+            {
+                MessageBox.Show("Please load an image first");
+                return;
+            }
+            
+            //Step 2: Conver to Bitmap for pixel manipulation
+            Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
+
+            //Step 3: Create new bitmap for inverted result
+            Bitmap invertedBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+
+            //Step 4: Process each pixel
+            for (int x = 0; x < originalBitmap.Width; x++)
+            {
+                for(int y = 0;y < originalBitmap.Height; y++)
+                {
+                    //Get original pixel color
+                    Color pixelColor = originalBitmap.GetPixel(x,y);
+
+                    //Apply inversion formula
+                    int inverted_red = 255 - pixelColor.R;
+                    int inverted_green = 255 - pixelColor.G;
+                    int inverted_blue = 255 - pixelColor.B;
+
+                    //Create new inverted color
+                    Color invertedColor = Color.FromArgb(inverted_red, inverted_green, inverted_blue);
+
+                    //Set the inverted pixel in the new bitmap
+                    invertedBitmap.SetPixel(x, y, invertedColor);
+                }
             }
 
-
+            //Step 5: Display the inverted image
+            editedPicBox.Image = invertedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            
         }
     }
 }

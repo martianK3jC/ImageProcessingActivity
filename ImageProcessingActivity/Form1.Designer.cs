@@ -104,6 +104,7 @@
             this.invertBtn.TabIndex = 6;
             this.invertBtn.Text = "Color Inversion";
             this.invertBtn.UseVisualStyleBackColor = true;
+            this.invertBtn.Click += new System.EventHandler(this.invertBtn_Click);
             // 
             // histogramBtn
             // 
