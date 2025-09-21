@@ -45,5 +45,45 @@ namespace ImageProcessingActivity
             }
 
         }
+
+        private void copyBtn_Click(object sender, EventArgs e)
+        {
+            //Step 1: Check if we have an image to copy
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first");
+            }
+            else
+            {
+                //Step 2: Convert to Bitmap for pixel manipulation
+                Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
+
+                //Step 3: Create a new bitmap with same width and height
+                Bitmap copiedBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+
+                //Step 4: Copy each pixel
+                for (int x = 0; x < originalBitmap.Width; x++) // -> goes through each column
+                {
+                    for (int y = 0; y < originalBitmap.Height; y++) // -> goes through each row
+                    {
+                        //PROCESS PIXEL AT POSITION(x,y)
+                        //Get pixel color from original
+                        Color pixelColor = originalBitmap.GetPixel(x, y); //-> to read the pixel
+
+                        //Set same color in copied bitmap
+                        copiedBitmap.SetPixel(x, y, pixelColor); //-> to write the pixel
+
+                        //Images are 2d arrays of pixels. x -> column position (left to right). y -> row position (up to down)... visit every single pixel to copuy
+                    }
+                }
+
+                //Step 5: Display the copied image
+                editedPicBox.Image = copiedBitmap;
+                editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            }       
+        }
+
+
+
     }
 }

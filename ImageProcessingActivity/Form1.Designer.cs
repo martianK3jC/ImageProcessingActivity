@@ -84,6 +84,7 @@
             this.copyBtn.TabIndex = 4;
             this.copyBtn.Text = "Basic Copy";
             this.copyBtn.UseVisualStyleBackColor = true;
+            this.copyBtn.Click += new System.EventHandler(this.copyBtn_Click);
             // 
             // grayBtn
             // 
