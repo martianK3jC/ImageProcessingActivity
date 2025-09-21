@@ -94,6 +94,7 @@
             this.grayBtn.TabIndex = 5;
             this.grayBtn.Text = "Grayscale";
             this.grayBtn.UseVisualStyleBackColor = true;
+            this.grayBtn.Click += new System.EventHandler(this.grayBtn_Click);
             // 
             // invertBtn
             // 

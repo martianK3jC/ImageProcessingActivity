@@ -83,7 +83,53 @@ namespace ImageProcessingActivity
             }       
         }
 
+        private void grayBtn_Click(object sender, EventArgs e)
+        {
+            //Grayscale formula = (R + G + B) /3
+
+            //Step 1: Check if we have an image to process
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first");
+            }
+            else
+            {
+                //Step 2: Convert to Bitmap for pixel manipulation
+                Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
+
+                //Step 3: Create new Bitmap for grayscale result
+                Bitmap grayscaleBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+
+                //Step 4: Process each pixel
+                for (int x = 0; x < originalBitmap.Width; x++)
+                {
+                    for (int y = 0; y < originalBitmap.Height; y++)
+                    {
+                        //Get original pixel color
+                        Color originalColor = originalBitmap.GetPixel(x,y);
+                        
+                        //Extract RGB values
+                        int red = originalColor.R;
+                        int green = originalColor.G;
+                        int blue = originalColor.B;
+
+                        //Create new gray color (same value for R, G, and B)
+                        int grayValue = (red + green + blue) / 3;
+
+                        //Create new gay color (same value for r, g, and b)
+                        Color grayColor = Color.FromArgb(grayValue, grayValue, grayValue);
+
+                        //Set the gray pixel in the new bitmap
+                        grayscaleBitmap.SetPixel(x, y, grayColor);
+                    }
+                }
+
+                //Step 5: Display the grayscale image
+                editedPicBox.Image = grayscaleBitmap;
+                editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            }
 
 
+        }
     }
 }
