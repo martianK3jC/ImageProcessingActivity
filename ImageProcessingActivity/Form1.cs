@@ -178,5 +178,70 @@ namespace ImageProcessingActivity
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
             
         }
+
+        private void histogramBtn_Click(object sender, EventArgs e)
+        {
+            //Step 1: Check if we have an image to analyze
+            if (originalPicBox == null)
+            {
+                MessageBox.Show("Please load an image first");
+                return;
+            }
+
+            // Step 2: Convert to Bitmap and prepare for processing
+            Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
+
+            //Step 3: Create array to count pixels at each intensity level
+            int[] histogram = new int[256]; // 256 possible grayscale values (0-255)
+
+            //Step 4: Scan all pixels and count intensities
+            for (int x = 0; x < originalBitmap.Width; x++) 
+            {
+                for (int y = 0; y < originalBitmap.Height; y++) 
+                {
+                    //Get pixel and convert to grayscale
+                    Color pixelColor = originalBitmap.GetPixel(x, y);
+
+                    //Extract RGB values
+                    int red = pixelColor.R;
+                    int green = pixelColor.G;
+                    int blue = pixelColor.B;
+
+                    //Create new gray color (same value for R, G, and B)
+                    int grayValue = (red + green + blue) / 3;
+
+                    //Increment the count for this gray level
+                    histogram[grayValue]++; //-> count this brightness level
+                }
+            }
+
+            //Step 5: Find maximum count for scaling the display
+            int maxCount = 0;
+            for (int i = 0; i < 256; i++) 
+            { 
+                if(histogram[i] > maxCount)
+                    maxCount = histogram[i]; //-> this tracks the highest bar
+            }
+
+            //Step 6: Create bitmap to draw histogram (256 wide, 200 tall)
+            Bitmap histogramBitmap = new Bitmap(256, 200);
+
+            //Step 7: Draw the histogram bars
+            for(int i = 0;i < 256; i++)
+            {
+                //Calculate bar height (scale to fit in 200 pixels)
+                int barHeight = (int)((double)histogram[i] / maxCount * 180); //Leave 20 pixels padding -> scale to fit
+
+                //Draw vertical line from bottom up
+                for (int j = 199; j >= (199 - barHeight); j--) //-> draw from bottom up
+                { 
+                    histogramBitmap.SetPixel(i, j, Color.Black);//-> draw bar pixel
+                }
+            }
+
+            //Step 8: Display the histogram
+            editedPicBox.Image = histogramBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
     }
 }

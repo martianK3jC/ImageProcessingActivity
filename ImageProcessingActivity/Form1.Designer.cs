@@ -43,17 +43,17 @@
             // 
             // originalPicBox
             // 
-            this.originalPicBox.Location = new System.Drawing.Point(12, 203);
+            this.originalPicBox.Location = new System.Drawing.Point(12, 232);
             this.originalPicBox.Name = "originalPicBox";
-            this.originalPicBox.Size = new System.Drawing.Size(654, 462);
+            this.originalPicBox.Size = new System.Drawing.Size(654, 433);
             this.originalPicBox.TabIndex = 0;
             this.originalPicBox.TabStop = false;
             // 
             // editedPicBox
             // 
-            this.editedPicBox.Location = new System.Drawing.Point(708, 203);
+            this.editedPicBox.Location = new System.Drawing.Point(708, 232);
             this.editedPicBox.Name = "editedPicBox";
-            this.editedPicBox.Size = new System.Drawing.Size(654, 462);
+            this.editedPicBox.Size = new System.Drawing.Size(654, 433);
             this.editedPicBox.TabIndex = 1;
             this.editedPicBox.TabStop = false;
             // 
@@ -114,6 +114,7 @@
             this.histogramBtn.TabIndex = 7;
             this.histogramBtn.Text = "Histogram";
             this.histogramBtn.UseVisualStyleBackColor = true;
+            this.histogramBtn.Click += new System.EventHandler(this.histogramBtn_Click);
             // 
             // sepiaBtn
             // 
