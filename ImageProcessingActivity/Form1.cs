@@ -243,5 +243,55 @@ namespace ImageProcessingActivity
             editedPicBox.Image = histogramBitmap;
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
         }
+
+        private void sepiaBtn_Click(object sender, EventArgs e)
+        {
+            //Step 1: Check if we have an image to process
+            if (originalPicBox.Image == null) 
+            {
+                MessageBox.Show("Please load an image first");
+                return;
+            }
+
+            //Step 2: Convert to Bitmap for pixel manipulation
+            Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
+
+            //Step 3: Create new bitmap for sepia result
+            Bitmap sepiaBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+
+            //Step 4: Process each pixel
+            for (int x = 0; x < originalBitmap.Width; x++) 
+            {
+                for (int y = 0; y < originalBitmap.Height; y++) 
+                {
+                    //Get original pixel color
+                    Color pixelColor = originalBitmap.GetPixel(x, y);
+
+                    //Extract RGB values
+                    int red = pixelColor.R;
+                    int green = pixelColor.G;
+                    int blue = pixelColor.B;
+
+                    //Apply sepia formulas
+                    int outputRed = (int)((red * 0.393) + (green * 0.769) + (blue * 0.189));
+                    int outputGreen = (int)((red * 0.349) + (green * 0.686) + (blue * 0.168));
+                    int outputBlue = (int)((red * 0.272) + (green * 0.534) + (blue * 0.131));
+
+                    //IMPORTANT: Clamp values to valid RGB range (0 - 255)
+                    outputRed = Math.Min(255, outputRed);
+                    outputGreen = Math.Min(255, outputGreen);
+                    outputBlue = Math.Min(255, outputBlue);
+
+                    //Create new sepia color
+                    Color sepiaColor = Color.FromArgb(outputRed, outputGreen, outputBlue);
+
+                    //Set the new sepia color
+                    sepiaBitmap.SetPixel(x, y, sepiaColor);
+                }
+            }
+            //Step 5: Display the sepia image
+            editedPicBox.Image = sepiaBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
     }
 }

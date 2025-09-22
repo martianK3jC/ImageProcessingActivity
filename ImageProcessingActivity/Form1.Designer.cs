@@ -43,17 +43,17 @@
             // 
             // originalPicBox
             // 
-            this.originalPicBox.Location = new System.Drawing.Point(12, 232);
+            this.originalPicBox.Location = new System.Drawing.Point(12, 253);
             this.originalPicBox.Name = "originalPicBox";
-            this.originalPicBox.Size = new System.Drawing.Size(654, 433);
+            this.originalPicBox.Size = new System.Drawing.Size(654, 412);
             this.originalPicBox.TabIndex = 0;
             this.originalPicBox.TabStop = false;
             // 
             // editedPicBox
             // 
-            this.editedPicBox.Location = new System.Drawing.Point(708, 232);
+            this.editedPicBox.Location = new System.Drawing.Point(708, 253);
             this.editedPicBox.Name = "editedPicBox";
-            this.editedPicBox.Size = new System.Drawing.Size(654, 433);
+            this.editedPicBox.Size = new System.Drawing.Size(654, 412);
             this.editedPicBox.TabIndex = 1;
             this.editedPicBox.TabStop = false;
             // 
@@ -124,6 +124,7 @@
             this.sepiaBtn.TabIndex = 8;
             this.sepiaBtn.Text = "Sepia";
             this.sepiaBtn.UseVisualStyleBackColor = true;
+            this.sepiaBtn.Click += new System.EventHandler(this.sepiaBtn_Click);
             // 
             // Form1
             // 
