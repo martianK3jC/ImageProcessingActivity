@@ -43,7 +43,7 @@
             // 
             // originalPicBox
             // 
-            this.originalPicBox.Location = new System.Drawing.Point(12, 253);
+            this.originalPicBox.Location = new System.Drawing.Point(12, 219);
             this.originalPicBox.Name = "originalPicBox";
             this.originalPicBox.Size = new System.Drawing.Size(654, 412);
             this.originalPicBox.TabIndex = 0;
@@ -51,7 +51,7 @@
             // 
             // editedPicBox
             // 
-            this.editedPicBox.Location = new System.Drawing.Point(708, 253);
+            this.editedPicBox.Location = new System.Drawing.Point(708, 219);
             this.editedPicBox.Name = "editedPicBox";
             this.editedPicBox.Size = new System.Drawing.Size(654, 412);
             this.editedPicBox.TabIndex = 1;
@@ -130,7 +130,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1374, 715);
+            this.ClientSize = new System.Drawing.Size(1374, 674);
             this.Controls.Add(this.sepiaBtn);
             this.Controls.Add(this.histogramBtn);
             this.Controls.Add(this.invertBtn);
