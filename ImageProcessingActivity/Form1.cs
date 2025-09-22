@@ -26,7 +26,7 @@ namespace ImageProcessingActivity
             openFileDialog.Title = "Select an Image File";
 
             //Step 2: Show the dialog and check if user selected a file
-            if(openFileDialog.ShowDialog() == DialogResult.OK)//-> this shows the dialog and checks if user clicks OK
+            if (openFileDialog.ShowDialog() == DialogResult.OK)//-> this shows the dialog and checks if user clicks OK
             {
                 try
                 {
@@ -43,7 +43,6 @@ namespace ImageProcessingActivity
                     MessageBox.Show("Error loading image: " + ex.Message);
                 }
             }
-
         }
 
         private void copyBtn_Click(object sender, EventArgs e)
@@ -54,33 +53,33 @@ namespace ImageProcessingActivity
                 MessageBox.Show("Please load an image first");
                 return;
             }
-            
-                //Step 2: Convert to Bitmap for pixel manipulation
-                Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
 
-                //Step 3: Create a new bitmap with same width and height
-                Bitmap copiedBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+            //Step 2: Convert to Bitmap for pixel manipulation
+            Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
 
-                //Step 4: Copy each pixel
-                for (int x = 0; x < originalBitmap.Width; x++) // -> goes through each column
+            //Step 3: Create a new bitmap with same width and height
+            Bitmap copiedBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+
+            //Step 4: Copy each pixel
+            for (int x = 0; x < originalBitmap.Width; x++) // -> goes through each column
+            {
+                for (int y = 0; y < originalBitmap.Height; y++) // -> goes through each row
                 {
-                    for (int y = 0; y < originalBitmap.Height; y++) // -> goes through each row
-                    {
-                        //PROCESS PIXEL AT POSITION(x,y)
-                        //Get pixel color from original
-                        Color pixelColor = originalBitmap.GetPixel(x, y); //-> to read the pixel
+                    //PROCESS PIXEL AT POSITION(x,y)
+                    //Get pixel color from original
+                    Color pixelColor = originalBitmap.GetPixel(x, y); //-> to read the pixel
 
-                        //Set same color in copied bitmap
-                        copiedBitmap.SetPixel(x, y, pixelColor); //-> to write the pixel
+                    //Set same color in copied bitmap
+                    copiedBitmap.SetPixel(x, y, pixelColor); //-> to write the pixel
 
-                        //Images are 2d arrays of pixels. x -> column position (left to right). y -> row position (up to down)... visit every single pixel to copuy
-                    }
+                    //Images are 2d arrays of pixels. x -> column position (left to right). y -> row position (up to down)... visit every single pixel to copuy
                 }
+            }
 
-                //Step 5: Display the copied image
-                editedPicBox.Image = copiedBitmap;
-                editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
-                   
+            //Step 5: Display the copied image
+            editedPicBox.Image = copiedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+
         }
 
         private void grayBtn_Click(object sender, EventArgs e)
@@ -93,40 +92,40 @@ namespace ImageProcessingActivity
                 MessageBox.Show("Please load an image first");
                 return;
             }
-            
-                //Step 2: Convert to Bitmap for pixel manipulation
-                Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
 
-                //Step 3: Create new Bitmap for grayscale result
-                Bitmap grayscaleBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+            //Step 2: Convert to Bitmap for pixel manipulation
+            Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
 
-                //Step 4: Process each pixel
-                for (int x = 0; x < originalBitmap.Width; x++)
+            //Step 3: Create new Bitmap for grayscale result
+            Bitmap grayscaleBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+
+            //Step 4: Process each pixel
+            for (int x = 0; x < originalBitmap.Width; x++)
+            {
+                for (int y = 0; y < originalBitmap.Height; y++)
                 {
-                    for (int y = 0; y < originalBitmap.Height; y++)
-                    {
-                        //Get original pixel color
-                        Color originalColor = originalBitmap.GetPixel(x,y);
-                        
-                        //Extract RGB values
-                        int red = originalColor.R;
-                        int green = originalColor.G;
-                        int blue = originalColor.B;
+                    //Get original pixel color
+                    Color originalColor = originalBitmap.GetPixel(x, y);
 
-                        //Create new gray color (same value for R, G, and B)
-                        int grayValue = (red + green + blue) / 3;
+                    //Extract RGB values
+                    int red = originalColor.R;
+                    int green = originalColor.G;
+                    int blue = originalColor.B;
 
-                        //Create new gay color (same value for r, g, and b)
-                        Color grayColor = Color.FromArgb(grayValue, grayValue, grayValue);
+                    //Create new gray color (same value for R, G, and B)
+                    int grayValue = (red + green + blue) / 3;
 
-                        //Set the gray pixel in the new bitmap
-                        grayscaleBitmap.SetPixel(x, y, grayColor);
-                    }
+                    //Create new gay color (same value for r, g, and b)
+                    Color grayColor = Color.FromArgb(grayValue, grayValue, grayValue);
+
+                    //Set the gray pixel in the new bitmap
+                    grayscaleBitmap.SetPixel(x, y, grayColor);
                 }
+            }
 
-                //Step 5: Display the grayscale image
-                editedPicBox.Image = grayscaleBitmap;
-                editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            //Step 5: Display the grayscale image
+            editedPicBox.Image = grayscaleBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
 
 
         }
@@ -140,12 +139,12 @@ namespace ImageProcessingActivity
                 inverted blue = 255 - B
              */
             //Step 1: Check if we have an image to process
-            if (originalPicBox.Image == null) 
+            if (originalPicBox.Image == null)
             {
                 MessageBox.Show("Please load an image first");
                 return;
             }
-            
+
             //Step 2: Conver to Bitmap for pixel manipulation
             Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
 
@@ -155,10 +154,10 @@ namespace ImageProcessingActivity
             //Step 4: Process each pixel
             for (int x = 0; x < originalBitmap.Width; x++)
             {
-                for(int y = 0;y < originalBitmap.Height; y++)
+                for (int y = 0; y < originalBitmap.Height; y++)
                 {
                     //Get original pixel color
-                    Color pixelColor = originalBitmap.GetPixel(x,y);
+                    Color pixelColor = originalBitmap.GetPixel(x, y);
 
                     //Apply inversion formula
                     int inverted_red = 255 - pixelColor.R;
@@ -176,7 +175,7 @@ namespace ImageProcessingActivity
             //Step 5: Display the inverted image
             editedPicBox.Image = invertedBitmap;
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
-            
+
         }
 
         private void histogramBtn_Click(object sender, EventArgs e)
@@ -195,9 +194,9 @@ namespace ImageProcessingActivity
             int[] histogram = new int[256]; // 256 possible grayscale values (0-255)
 
             //Step 4: Scan all pixels and count intensities
-            for (int x = 0; x < originalBitmap.Width; x++) 
+            for (int x = 0; x < originalBitmap.Width; x++)
             {
-                for (int y = 0; y < originalBitmap.Height; y++) 
+                for (int y = 0; y < originalBitmap.Height; y++)
                 {
                     //Get pixel and convert to grayscale
                     Color pixelColor = originalBitmap.GetPixel(x, y);
@@ -217,9 +216,9 @@ namespace ImageProcessingActivity
 
             //Step 5: Find maximum count for scaling the display
             int maxCount = 0;
-            for (int i = 0; i < 256; i++) 
-            { 
-                if(histogram[i] > maxCount)
+            for (int i = 0; i < 256; i++)
+            {
+                if (histogram[i] > maxCount)
                     maxCount = histogram[i]; //-> this tracks the highest bar
             }
 
@@ -227,14 +226,14 @@ namespace ImageProcessingActivity
             Bitmap histogramBitmap = new Bitmap(256, 200);
 
             //Step 7: Draw the histogram bars
-            for(int i = 0;i < 256; i++)
+            for (int i = 0; i < 256; i++)
             {
                 //Calculate bar height (scale to fit in 200 pixels)
                 int barHeight = (int)((double)histogram[i] / maxCount * 180); //Leave 20 pixels padding -> scale to fit
 
                 //Draw vertical line from bottom up
                 for (int j = 199; j >= (199 - barHeight); j--) //-> draw from bottom up
-                { 
+                {
                     histogramBitmap.SetPixel(i, j, Color.Black);//-> draw bar pixel
                 }
             }
@@ -247,7 +246,7 @@ namespace ImageProcessingActivity
         private void sepiaBtn_Click(object sender, EventArgs e)
         {
             //Step 1: Check if we have an image to process
-            if (originalPicBox.Image == null) 
+            if (originalPicBox.Image == null)
             {
                 MessageBox.Show("Please load an image first");
                 return;
@@ -260,9 +259,9 @@ namespace ImageProcessingActivity
             Bitmap sepiaBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
 
             //Step 4: Process each pixel
-            for (int x = 0; x < originalBitmap.Width; x++) 
+            for (int x = 0; x < originalBitmap.Width; x++)
             {
-                for (int y = 0; y < originalBitmap.Height; y++) 
+                for (int y = 0; y < originalBitmap.Height; y++)
                 {
                     //Get original pixel color
                     Color pixelColor = originalBitmap.GetPixel(x, y);
@@ -297,7 +296,7 @@ namespace ImageProcessingActivity
         private void saveBtn_Click(object sender, EventArgs e)
         {
             //Step 1: Check if there is a loaded image
-            if(editedPicBox.Image == null)
+            if (editedPicBox.Image == null)
             {
                 MessageBox.Show("No Processed image to save! Please process an image first.");
                 return;
@@ -323,7 +322,7 @@ namespace ImageProcessingActivity
                     //Step 6: Show success message
                     MessageBox.Show($"HUZZAH! IMAGE SAVED SUCCESSFULLY TO:\n{saveFileDialog.FileName}");
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     //Step 7: Handle any errors (permissions, disk space, etc.)
                     MessageBox.Show($"Error saving image: {ex.Message}");
@@ -331,6 +330,98 @@ namespace ImageProcessingActivity
             }
 
 
+        }
+
+        private void loadBtn2_Click(object sender, EventArgs e)
+        {
+            //Step 1: Create and configure the file dialog
+            OpenFileDialog openFileDialog = new OpenFileDialog(); // -> creation of a windows file picker dialog
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif"; // -> restricts file types to common image formats. Format: Display Name|file patterns.... ex. name.png, etc chuchu
+            openFileDialog.Title = "Select an Image File";
+
+            //Step 2: Show the dialog and check if user selected a file
+            if (openFileDialog.ShowDialog() == DialogResult.OK)//-> this shows the dialog and checks if user clicks OK
+            {
+                try
+                {
+                    //Step 3: Load the Selected Image
+                    Image selectedImage = Image.FromFile(openFileDialog.FileName);
+
+                    //Step 4: Display it in the original picture box
+                    pictureBox2.Image = selectedImage; // -> assigns image to picture box
+                    pictureBox2.SizeMode = PictureBoxSizeMode.StretchImage; // -> StretchImage to make it fit the picture box
+                }
+                catch (Exception ex)
+                {
+                    //Step 5: Handle any errors (corrupted files, ect.)
+                    MessageBox.Show("Error loading image: " + ex.Message);
+                }
+            }
+        }
+
+        private void subtractBtn_Click(object sender, EventArgs e)
+        {
+            //Step 1: Check both images exist and are the same size
+            if (originalPicBox == null || pictureBox2 == null)
+            {
+                MessageBox.Show("Please load both Image A and Image B first");
+                return;
+            }
+
+            //Step 2: Convert to bitmaps
+            Bitmap imageABitmap = new Bitmap(originalPicBox.Image);
+            Bitmap imageBBitmap = new Bitmap(pictureBox2.Image);
+
+            //Step 3: Check if images are same size
+            if (imageABitmap.Width != imageBBitmap.Width || imageABitmap.Height != imageBBitmap.Height)
+            {
+                MessageBox.Show("Images must be the same size for background replacement");
+                return;
+            }
+
+            //Step 4: Create result bitmap
+            Bitmap resultBitmap = new Bitmap(imageABitmap.Width, imageABitmap.Height);
+
+            //Step 5: Set threshold value 
+            int threshold = 130; //-> adjust value for experimentation
+
+            //Step 6: Process each pixel
+            for (int x = 0; x < imageABitmap.Width; x++) 
+            {
+                for (int y = 0; y < imageBBitmap.Height; y++)
+                {
+
+                    // Get pixels from both images
+                    Color pixelA = imageABitmap.GetPixel(x, y);
+                    Color pixelB = imageBBitmap.GetPixel(x, y);
+
+                    // Convert to grayscale for comparison
+                    int grayA = (pixelA.R + pixelA.G + pixelA.B) / 3;
+                    int grayB = (pixelB.R + pixelB.G + pixelB.B) / 3;
+
+                    // Calculate absolute difference
+                    int difference = Math.Abs(grayA - grayB);
+
+                    // Decide which pixel to use
+                    if (difference > threshold)
+                    {
+                        // Pixels are different - use original background (Image A)
+                        resultBitmap.SetPixel(x, y, pixelA);
+                    }
+                    else
+                    {
+                        // Pixels are similar - use person from green screen (Image B)
+                        resultBitmap.SetPixel(x, y, pixelB);
+                    }
+
+                }
+            }
+
+            //Step 7: Display Result
+            editedPicBox.Image = resultBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+
+            MessageBox.Show("Background replacement compete!");
         }
     }
 }

@@ -37,13 +37,17 @@
             this.invertBtn = new System.Windows.Forms.Button();
             this.histogramBtn = new System.Windows.Forms.Button();
             this.sepiaBtn = new System.Windows.Forms.Button();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.loadBtn2 = new System.Windows.Forms.Button();
+            this.subtractBtn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.originalPicBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.editedPicBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // originalPicBox
             // 
-            this.originalPicBox.Location = new System.Drawing.Point(12, 219);
+            this.originalPicBox.Location = new System.Drawing.Point(12, 79);
             this.originalPicBox.Name = "originalPicBox";
             this.originalPicBox.Size = new System.Drawing.Size(654, 412);
             this.originalPicBox.TabIndex = 0;
@@ -51,7 +55,7 @@
             // 
             // editedPicBox
             // 
-            this.editedPicBox.Location = new System.Drawing.Point(708, 219);
+            this.editedPicBox.Location = new System.Drawing.Point(12, 514);
             this.editedPicBox.Name = "editedPicBox";
             this.editedPicBox.Size = new System.Drawing.Size(654, 412);
             this.editedPicBox.TabIndex = 1;
@@ -59,17 +63,17 @@
             // 
             // loadBtn
             // 
-            this.loadBtn.Location = new System.Drawing.Point(29, 38);
+            this.loadBtn.Location = new System.Drawing.Point(12, 7);
             this.loadBtn.Name = "loadBtn";
             this.loadBtn.Size = new System.Drawing.Size(175, 54);
             this.loadBtn.TabIndex = 2;
-            this.loadBtn.Text = "Load image";
+            this.loadBtn.Text = "Load Image A";
             this.loadBtn.UseVisualStyleBackColor = true;
             this.loadBtn.Click += new System.EventHandler(this.loadBtn_Click);
             // 
             // saveBtn
             // 
-            this.saveBtn.Location = new System.Drawing.Point(231, 38);
+            this.saveBtn.Location = new System.Drawing.Point(683, 872);
             this.saveBtn.Name = "saveBtn";
             this.saveBtn.Size = new System.Drawing.Size(175, 54);
             this.saveBtn.TabIndex = 3;
@@ -79,7 +83,7 @@
             // 
             // copyBtn
             // 
-            this.copyBtn.Location = new System.Drawing.Point(29, 119);
+            this.copyBtn.Location = new System.Drawing.Point(896, 514);
             this.copyBtn.Name = "copyBtn";
             this.copyBtn.Size = new System.Drawing.Size(175, 54);
             this.copyBtn.TabIndex = 4;
@@ -89,7 +93,7 @@
             // 
             // grayBtn
             // 
-            this.grayBtn.Location = new System.Drawing.Point(231, 119);
+            this.grayBtn.Location = new System.Drawing.Point(682, 574);
             this.grayBtn.Name = "grayBtn";
             this.grayBtn.Size = new System.Drawing.Size(175, 54);
             this.grayBtn.TabIndex = 5;
@@ -99,7 +103,7 @@
             // 
             // invertBtn
             // 
-            this.invertBtn.Location = new System.Drawing.Point(435, 119);
+            this.invertBtn.Location = new System.Drawing.Point(682, 514);
             this.invertBtn.Name = "invertBtn";
             this.invertBtn.Size = new System.Drawing.Size(175, 54);
             this.invertBtn.TabIndex = 6;
@@ -109,7 +113,7 @@
             // 
             // histogramBtn
             // 
-            this.histogramBtn.Location = new System.Drawing.Point(641, 119);
+            this.histogramBtn.Location = new System.Drawing.Point(896, 574);
             this.histogramBtn.Name = "histogramBtn";
             this.histogramBtn.Size = new System.Drawing.Size(175, 54);
             this.histogramBtn.TabIndex = 7;
@@ -119,7 +123,7 @@
             // 
             // sepiaBtn
             // 
-            this.sepiaBtn.Location = new System.Drawing.Point(844, 119);
+            this.sepiaBtn.Location = new System.Drawing.Point(1108, 574);
             this.sepiaBtn.Name = "sepiaBtn";
             this.sepiaBtn.Size = new System.Drawing.Size(175, 54);
             this.sepiaBtn.TabIndex = 8;
@@ -127,11 +131,42 @@
             this.sepiaBtn.UseVisualStyleBackColor = true;
             this.sepiaBtn.Click += new System.EventHandler(this.sepiaBtn_Click);
             // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Location = new System.Drawing.Point(683, 79);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(654, 412);
+            this.pictureBox2.TabIndex = 9;
+            this.pictureBox2.TabStop = false;
+            // 
+            // loadBtn2
+            // 
+            this.loadBtn2.Location = new System.Drawing.Point(683, 7);
+            this.loadBtn2.Name = "loadBtn2";
+            this.loadBtn2.Size = new System.Drawing.Size(175, 54);
+            this.loadBtn2.TabIndex = 10;
+            this.loadBtn2.Text = "Load Image B";
+            this.loadBtn2.UseVisualStyleBackColor = true;
+            this.loadBtn2.Click += new System.EventHandler(this.loadBtn2_Click);
+            // 
+            // subtractBtn
+            // 
+            this.subtractBtn.Location = new System.Drawing.Point(1108, 514);
+            this.subtractBtn.Name = "subtractBtn";
+            this.subtractBtn.Size = new System.Drawing.Size(175, 54);
+            this.subtractBtn.TabIndex = 11;
+            this.subtractBtn.Text = "Subtract";
+            this.subtractBtn.UseVisualStyleBackColor = true;
+            this.subtractBtn.Click += new System.EventHandler(this.subtractBtn_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1374, 674);
+            this.ClientSize = new System.Drawing.Size(1518, 1062);
+            this.Controls.Add(this.subtractBtn);
+            this.Controls.Add(this.loadBtn2);
+            this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.sepiaBtn);
             this.Controls.Add(this.histogramBtn);
             this.Controls.Add(this.invertBtn);
@@ -145,6 +180,7 @@
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.originalPicBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.editedPicBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -160,6 +196,9 @@
         private System.Windows.Forms.Button invertBtn;
         private System.Windows.Forms.Button histogramBtn;
         private System.Windows.Forms.Button sepiaBtn;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Button loadBtn2;
+        private System.Windows.Forms.Button subtractBtn;
     }
 }
 
