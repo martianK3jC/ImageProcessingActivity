@@ -75,6 +75,7 @@
             this.saveBtn.TabIndex = 3;
             this.saveBtn.Text = "Save image";
             this.saveBtn.UseVisualStyleBackColor = true;
+            this.saveBtn.Click += new System.EventHandler(this.saveBtn_Click);
             // 
             // copyBtn
             // 

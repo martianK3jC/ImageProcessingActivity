@@ -293,5 +293,44 @@ namespace ImageProcessingActivity
             editedPicBox.Image = sepiaBitmap;
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
         }
+
+        private void saveBtn_Click(object sender, EventArgs e)
+        {
+            //Step 1: Check if there is a loaded image
+            if(editedPicBox.Image == null)
+            {
+                MessageBox.Show("No Processed image to save! Please process an image first.");
+                return;
+            }
+
+            //Step 2: Create and configure the save dialog
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp|All Files|*.*";
+            saveFileDialog.Title = "Save Processed Image";
+            saveFileDialog.DefaultExt = "png"; //Default to PNG
+
+            //Step 3: Show the dialog and check if user clicked Save
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    //Step 4: Get the image from the edited picture box
+                    Image imageToSave = editedPicBox.Image;
+
+                    //Step 5: Save the image to the selected file path
+                    imageToSave.Save(saveFileDialog.FileName);
+
+                    //Step 6: Show success message
+                    MessageBox.Show($"HUZZAH! IMAGE SAVED SUCCESSFULLY TO:\n{saveFileDialog.FileName}");
+                }
+                catch (Exception ex) 
+                {
+                    //Step 7: Handle any errors (permissions, disk space, etc.)
+                    MessageBox.Show($"Error saving image: {ex.Message}");
+                }
+            }
+
+
+        }
     }
 }
