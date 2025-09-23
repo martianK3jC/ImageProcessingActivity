@@ -7,16 +7,72 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WebCamLib;
 
 namespace ImageProcessingActivity
 {
     public partial class Form1 : Form
     {
+        private Device[] devices;
+        private Device currentDevice; //Track Device
+        private System.Windows.Forms.Timer webcamTimer;
+        private bool isWebcamRunning = false;
+
         public Form1()
         {
             InitializeComponent();
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            // Initialize devices on form load
+            RefreshDevices();
+
+            // Setup timer
+            webcamTimer = new System.Windows.Forms.Timer();
+            webcamTimer.Interval = 100; // Update every 100ms
+            webcamTimer.Tick += WebcamTimer_Tick;
+        }
+
+        #region Improved Device Management
+
+        private void RefreshDevices()
+        {
+            try
+            {
+                devices = DeviceManager.GetAllDevices();
+
+                // Clear and populate combo box if you have one
+                if (webcamDevicesComboBox != null)
+                {
+                    webcamDevicesComboBox.Items.Clear();
+                    foreach (Device device in devices)
+                    {
+                        webcamDevicesComboBox.Items.Add($"{device.Name} - {device.Version}");
+                    }
+                    if (devices.Length > 0)
+                        webcamDevicesComboBox.SelectedIndex = 0;
+                }
+
+                MessageBox.Show($"Found {devices.Length} webcam device(s)\n" +
+                               $"If you see a black screen, try:\n" +
+                               $"1. Closing other apps using the webcam\n" +
+                               $"2. Selecting a different device\n" +
+                               $"3. Restarting the application");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error finding devices: {ex.Message}\n\n" +
+                               $"Possible solutions:\n" +
+                               $"1. Make sure webcam is connected\n" +
+                               $"2. Install webcam drivers\n" +
+                               $"3. Run as administrator");
+            }
+        }
+
+        #endregion
+
+        #region Load Image A Button
         //Loading an original picture to originalPicBox
         private void loadBtn_Click(object sender, EventArgs e)
         {
@@ -44,7 +100,9 @@ namespace ImageProcessingActivity
                 }
             }
         }
+        #endregion
 
+        #region Copy Button
         private void copyBtn_Click(object sender, EventArgs e)
         {
             //Step 1: Check if we have an image to copy
@@ -54,34 +112,47 @@ namespace ImageProcessingActivity
                 return;
             }
 
-            //Step 2: Convert to Bitmap for pixel manipulation
-            Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
-
-            //Step 3: Create a new bitmap with same width and height
-            Bitmap copiedBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
-
-            //Step 4: Copy each pixel
-            for (int x = 0; x < originalBitmap.Width; x++) // -> goes through each column
+            try
             {
-                for (int y = 0; y < originalBitmap.Height; y++) // -> goes through each row
-                {
-                    //PROCESS PIXEL AT POSITION(x,y)
-                    //Get pixel color from original
-                    Color pixelColor = originalBitmap.GetPixel(x, y); //-> to read the pixel
+                // Use LockBits for faster copying
+                Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
+                Bitmap copiedBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
 
-                    //Set same color in copied bitmap
-                    copiedBitmap.SetPixel(x, y, pixelColor); //-> to write the pixel
+                // Define the rectangle to lock
+                Rectangle rect = new Rectangle(0, 0, originalBitmap.Width, originalBitmap.Height);
 
-                    //Images are 2d arrays of pixels. x -> column position (left to right). y -> row position (up to down)... visit every single pixel to copuy
-                }
+                // Lock the bitmap data
+                System.Drawing.Imaging.BitmapData sourceData = originalBitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, originalBitmap.PixelFormat);
+                System.Drawing.Imaging.BitmapData destData = copiedBitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, copiedBitmap.PixelFormat);
+
+                // Get the address of the first line
+                IntPtr sourcePtr = sourceData.Scan0;
+                IntPtr destPtr = destData.Scan0;
+
+                // Calculate the number of bytes to copy
+                int bytes = Math.Abs(sourceData.Stride) * originalBitmap.Height;
+
+                // Copy the RGB values using System.Runtime.InteropServices.Marshal
+                System.Runtime.InteropServices.Marshal.Copy(sourcePtr, new byte[bytes], 0, bytes);
+                System.Runtime.InteropServices.Marshal.Copy(new byte[bytes], 0, destPtr, bytes);
+
+                // Unlock the bitmap data
+                originalBitmap.UnlockBits(sourceData);
+                copiedBitmap.UnlockBits(destData);
+
+                //Step 5: Display the copied image
+                editedPicBox.Image = copiedBitmap;
+                editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
             }
-
-            //Step 5: Display the copied image
-            editedPicBox.Image = copiedBitmap;
-            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
-
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error copying image: " + ex.Message);
+            }
         }
 
+        #endregion
+
+        #region Grayscale Button
         private void grayBtn_Click(object sender, EventArgs e)
         {
             //Grayscale formula = (R + G + B) /3
@@ -115,7 +186,7 @@ namespace ImageProcessingActivity
                     //Create new gray color (same value for R, G, and B)
                     int grayValue = (red + green + blue) / 3;
 
-                    //Create new gay color (same value for r, g, and b)
+                    //Create new gray color (same value for r, g, and b)
                     Color grayColor = Color.FromArgb(grayValue, grayValue, grayValue);
 
                     //Set the gray pixel in the new bitmap
@@ -126,10 +197,10 @@ namespace ImageProcessingActivity
             //Step 5: Display the grayscale image
             editedPicBox.Image = grayscaleBitmap;
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
-
-
         }
+        #endregion
 
+        #region invert Button
         private void invertBtn_Click(object sender, EventArgs e)
         {
             /*
@@ -175,13 +246,14 @@ namespace ImageProcessingActivity
             //Step 5: Display the inverted image
             editedPicBox.Image = invertedBitmap;
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
-
         }
+        #endregion
 
+        #region Histogram Button
         private void histogramBtn_Click(object sender, EventArgs e)
         {
             //Step 1: Check if we have an image to analyze
-            if (originalPicBox == null)
+            if (originalPicBox.Image == null)
             {
                 MessageBox.Show("Please load an image first");
                 return;
@@ -242,7 +314,9 @@ namespace ImageProcessingActivity
             editedPicBox.Image = histogramBitmap;
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
         }
+        #endregion
 
+        #region Sepia Button
         private void sepiaBtn_Click(object sender, EventArgs e)
         {
             //Step 1: Check if we have an image to process
@@ -292,7 +366,9 @@ namespace ImageProcessingActivity
             editedPicBox.Image = sepiaBitmap;
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
         }
+        #endregion
 
+        #region Save Button
         private void saveBtn_Click(object sender, EventArgs e)
         {
             //Step 1: Check if there is a loaded image
@@ -328,10 +404,10 @@ namespace ImageProcessingActivity
                     MessageBox.Show($"Error saving image: {ex.Message}");
                 }
             }
-
-
         }
+        #endregion
 
+        #region Load Image B Button
         private void loadBtn2_Click(object sender, EventArgs e)
         {
             //Step 1: Create and configure the file dialog
@@ -358,70 +434,484 @@ namespace ImageProcessingActivity
                 }
             }
         }
+        #endregion
 
+        #region Subtract Button
         private void subtractBtn_Click(object sender, EventArgs e)
         {
-            //Step 1: Check both images exist and are the same size
-            if (originalPicBox == null || pictureBox2 == null)
+            if (originalPicBox.Image == null || pictureBox2.Image == null)
             {
                 MessageBox.Show("Please load both Image A and Image B first");
                 return;
             }
 
-            //Step 2: Convert to bitmaps
             Bitmap imageABitmap = new Bitmap(originalPicBox.Image);
             Bitmap imageBBitmap = new Bitmap(pictureBox2.Image);
 
-            //Step 3: Check if images are same size
             if (imageABitmap.Width != imageBBitmap.Width || imageABitmap.Height != imageBBitmap.Height)
             {
                 MessageBox.Show("Images must be the same size for background replacement");
                 return;
             }
 
-            //Step 4: Create result bitmap
             Bitmap resultBitmap = new Bitmap(imageABitmap.Width, imageABitmap.Height);
 
-            //Step 5: Set threshold value 
-            int threshold = 130; //-> adjust value for experimentation
-
-            //Step 6: Process each pixel
-            for (int x = 0; x < imageABitmap.Width; x++) 
+            for (int x = 0; x < imageABitmap.Width; x++)
             {
-                for (int y = 0; y < imageBBitmap.Height; y++)
+                for (int y = 0; y < imageABitmap.Height; y++)
                 {
-
-                    // Get pixels from both images
                     Color pixelA = imageABitmap.GetPixel(x, y);
                     Color pixelB = imageBBitmap.GetPixel(x, y);
 
-                    // Convert to grayscale for comparison
-                    int grayA = (pixelA.R + pixelA.G + pixelA.B) / 3;
-                    int grayB = (pixelB.R + pixelB.G + pixelB.B) / 3;
+                    // Simple green check
+                    bool isGreen = (pixelB.G > pixelB.R + 50) && (pixelB.G > pixelB.B + 50) && (pixelB.G > 150);
 
-                    // Calculate absolute difference
-                    int difference = Math.Abs(grayA - grayB);
-
-                    // Decide which pixel to use
-                    if (difference > threshold)
+                    if (isGreen)
                     {
-                        // Pixels are different - use original background (Image A)
-                        resultBitmap.SetPixel(x, y, pixelA);
+                        resultBitmap.SetPixel(x, y, pixelA); // Replace with background
                     }
                     else
                     {
-                        // Pixels are similar - use person from green screen (Image B)
-                        resultBitmap.SetPixel(x, y, pixelB);
+                        resultBitmap.SetPixel(x, y, pixelB); // Keep original
                     }
-
                 }
             }
 
-            //Step 7: Display Result
             editedPicBox.Image = resultBitmap;
             editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            MessageBox.Show("Green screen replacement complete!");
+        }
+        #endregion
 
-            MessageBox.Show("Background replacement compete!");
+        // ENHANCED WEBCAM FUNCTIONALITY
+
+        #region Enhanced Toggle Webcam Button
+        private void toggleWebcamBtn_Click(object sender, EventArgs e)
+        {
+            if (!isWebcamRunning)
+            {
+                // Update button text while starting
+                toggleWebcamBtn.Text = "Starting...";
+                toggleWebcamBtn.Enabled = false;
+
+                Application.DoEvents(); // Allow UI to update
+
+                StartWebcam();
+
+                toggleWebcamBtn.Text = isWebcamRunning ? "Stop Webcam" : "Start Webcam";
+                toggleWebcamBtn.Enabled = true;
+            }
+            else
+            {
+                StopWebcam();
+                toggleWebcamBtn.Text = "Start Webcam";
+            }
+        }
+        #endregion
+
+        #region Enhanced Start Webcam
+        private void StartWebcam()
+        {
+            try
+            {
+                // Stop any existing webcam first
+                if (currentDevice != null)
+                {
+                    StopWebcam();
+                    System.Threading.Thread.Sleep(1000); // Wait for cleanup
+                }
+
+                if (devices == null || devices.Length == 0)
+                {
+                    RefreshDevices();
+                    if (devices.Length == 0)
+                    {
+                        MessageBox.Show("No webcam devices found! Please check:\n" +
+                                      "1. Webcam is connected\n" +
+                                      "2. Drivers are installed\n" +
+                                      "3. No other apps are using webcam");
+                        return;
+                    }
+                }
+
+                // Use selected device from combo box if available, otherwise use first device
+                int deviceIndex = 0;
+                if (webcamDevicesComboBox != null && webcamDevicesComboBox.SelectedIndex >= 0)
+                {
+                    deviceIndex = webcamDevicesComboBox.SelectedIndex;
+                }
+
+                currentDevice = devices[deviceIndex];
+
+                // Clear the picture box first
+                originalPicBox.Image = null;
+                originalPicBox.Refresh();
+
+                // Initialize the webcam with proper error handling
+                currentDevice.ShowWindow(originalPicBox);
+
+                // Give the webcam time to initialize
+                System.Threading.Thread.Sleep(2000);
+
+                isWebcamRunning = true;
+
+                // Test if webcam is actually working by trying to capture a frame
+                TestWebcamCapture();
+
+                MessageBox.Show($"Webcam started using: {currentDevice.Name}\n" +
+                               $"If you see black screen:\n" +
+                               $"1. Wait 3-5 seconds for initialization\n" +
+                               $"2. Try capturing a test frame\n" +
+                               $"3. Try a different webcam device");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error starting webcam: {ex.Message}\n\n" +
+                               $"Troubleshooting:\n" +
+                               $"1. Close Skype, Teams, or other webcam apps\n" +
+                               $"2. Try running as administrator\n" +
+                               $"3. Check Windows Privacy settings for camera access");
+
+                // Clean up on error
+                if (currentDevice != null)
+                {
+                    try { currentDevice.Stop(); } catch { }
+                    currentDevice = null;
+                }
+                isWebcamRunning = false;
+            }
+        }
+        #endregion
+
+        #region Enhanced Stop Webcam
+        private void StopWebcam()
+        {
+            try
+            {
+                webcamTimer.Enabled = false;
+
+                if (currentDevice != null)
+                {
+                    currentDevice.Stop();
+                    System.Threading.Thread.Sleep(500); // Give time for cleanup
+                    currentDevice = null;
+                }
+
+                isWebcamRunning = false;
+
+                // Clear the webcam picture box
+                if (originalPicBox.Image != null)
+                {
+                    originalPicBox.Image.Dispose();
+                    originalPicBox.Image = null;
+                }
+                originalPicBox.Refresh();
+
+                MessageBox.Show("Webcam stopped successfully!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error stopping webcam: {ex.Message}");
+                // Force cleanup even if there's an error
+                currentDevice = null;
+                isWebcamRunning = false;
+            }
+        }
+        #endregion
+
+        #region Test Webcam Capture Function
+        private void TestWebcamCapture()
+        {
+            if (currentDevice == null) return;
+
+            try
+            {
+                // Try to capture a test frame to verify webcam is working
+                currentDevice.Sendmessage();
+                System.Threading.Thread.Sleep(500);
+
+                if (Clipboard.ContainsImage())
+                {
+                    using (Image testImage = Clipboard.GetImage())
+                    {
+                        // Check if we got a valid image (not just black)
+                        using (Bitmap testBitmap = new Bitmap(testImage))
+                        {
+                            bool hasContent = CheckImageHasContent(testBitmap);
+                            if (!hasContent)
+                            {
+                                MessageBox.Show("Warning: Webcam appears to be capturing black frames.\n" +
+                                               "This might indicate:\n" +
+                                               "1. Camera is covered or blocked\n" +
+                                               "2. Wrong device selected\n" +
+                                               "3. Camera needs time to adjust to lighting\n" +
+                                               "4. Driver issues");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Warning: Unable to capture test frame.\n" +
+                                   "Camera might not be responding properly.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Test capture error: {ex.Message}");
+            }
+        }
+
+        // Helper method to check if image has actual content (not just black)
+        private bool CheckImageHasContent(Bitmap bitmap)
+        {
+            int samplePoints = 10;
+            int nonBlackPixels = 0;
+
+            for (int i = 0; i < samplePoints; i++)
+            {
+                for (int j = 0; j < samplePoints; j++)
+                {
+                    int x = (bitmap.Width * i) / samplePoints;
+                    int y = (bitmap.Height * j) / samplePoints;
+
+                    if (x < bitmap.Width && y < bitmap.Height)
+                    {
+                        Color pixel = bitmap.GetPixel(x, y);
+                        if (pixel.R > 10 || pixel.G > 10 || pixel.B > 10)
+                        {
+                            nonBlackPixels++;
+                        }
+                    }
+                }
+            }
+
+            // If more than 10% of sample pixels are non-black, assume image has content
+            return nonBlackPixels > (samplePoints * samplePoints * 0.1);
+        }
+        #endregion
+
+        #region Start Green Screen Processing Button
+        private void startProcessingBtn_Click(object sender, EventArgs e)
+        {
+            if (!isWebcamRunning)
+            {
+                MessageBox.Show("Please start the webcam first!");
+                return;
+            }
+
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load a background image first!");
+                return;
+            }
+
+            webcamTimer.Enabled = !webcamTimer.Enabled;
+
+            if (webcamTimer.Enabled)
+            {
+                MessageBox.Show("Real-time green screen processing started!");
+                // startProcessingBtn.Text = "Stop Processing";
+            }
+            else
+            {
+                MessageBox.Show("Processing stopped!");
+                // startProcessingBtn.Text = "Start Processing";
+            }
+        }
+        #endregion
+
+        #region WebcamTimer_Tick
+        private void WebcamTimer_Tick(object sender, EventArgs e)
+        {
+            if (currentDevice == null || pictureBox2.Image == null)
+                return;
+
+            try
+            {
+                currentDevice.Sendmessage();
+                System.Threading.Thread.Sleep(30); // Small delay
+
+                if (Clipboard.ContainsImage())
+                {
+                    using (Image webcamFrame = Clipboard.GetImage())
+                    using (Bitmap webcamBitmap = new Bitmap(webcamFrame))
+                    using (Bitmap backgroundBitmap = new Bitmap(pictureBox2.Image))
+                    {
+                        Bitmap processedWebcam = webcamBitmap;
+                        if (webcamBitmap.Size != backgroundBitmap.Size)
+                        {
+                            processedWebcam = new Bitmap(webcamBitmap, backgroundBitmap.Size);
+                        }
+
+                        Bitmap result = ApplyGreenScreen(processedWebcam, backgroundBitmap);
+
+                        if (editedPicBox.Image != null)
+                            editedPicBox.Image.Dispose();
+
+                        editedPicBox.Image = result;
+
+                        if (processedWebcam != webcamBitmap)
+                            processedWebcam.Dispose();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Processing error: {ex.Message}");
+            }
+        }
+        #endregion
+
+        #region Apply green screen effect
+        private Bitmap ApplyGreenScreen(Bitmap webcamBitmap, Bitmap backgroundBitmap)
+        {
+            Bitmap result = new Bitmap(backgroundBitmap.Width, backgroundBitmap.Height);
+
+            for (int x = 0; x < result.Width; x++)
+            {
+                for (int y = 0; y < result.Height; y++)
+                {
+                    Color webcamPixel = webcamBitmap.GetPixel(x, y);
+                    Color backgroundPixel = backgroundBitmap.GetPixel(x, y);
+
+                    // Green screen detection na ari
+                    bool isGreen = (webcamPixel.G > webcamPixel.R + 50) &&
+                                  (webcamPixel.G > webcamPixel.B + 50) &&
+                                  (webcamPixel.G > 150);
+
+                    result.SetPixel(x, y, isGreen ? backgroundPixel : webcamPixel);
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        #region Enhanced Capture Frame Button
+        private void captureFrameBtn_Click(object sender, EventArgs e)
+        {
+            if (currentDevice == null)
+            {
+                MessageBox.Show("Please start webcam first!");
+                return;
+            }
+
+            try
+            {
+                currentDevice.Sendmessage();
+                System.Threading.Thread.Sleep(50);
+
+                if (Clipboard.ContainsImage())
+                {
+                    // Dispose any existing image in the first picture box
+                    if (originalPicBox.Image != null)
+                        originalPicBox.Image.Dispose();
+
+                    // Put the captured frame into the first picture box
+                    originalPicBox.Image = Clipboard.GetImage();
+                    originalPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+
+                    MessageBox.Show("Frame captured and loaded into Image A box!");
+                }
+                else
+                {
+                    MessageBox.Show("Unable to capture frame. Make sure webcam is working properly.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error capturing frame: {ex.Message}");
+            }
+        }
+        #endregion
+
+        #region Device Selection Event (Optional - if you have a ComboBox)
+        // If you have a webcamDevicesComboBox, add this event handler
+        private void webcamDevicesComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // If webcam is currently running, restart it with new device
+            if (isWebcamRunning)
+            {
+                StopWebcam();
+                System.Threading.Thread.Sleep(1000);
+                StartWebcam();
+            }
+        }
+        #endregion
+
+        #region Form Closing Event
+        // Add this to prevent issues when closing the form
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Make sure to stop webcam when form is closing
+            if (isWebcamRunning)
+            {
+                StopWebcam();
+            }
+
+            // Dispose of any images to free memory
+            if (originalPicBox.Image != null)
+            {
+                originalPicBox.Image.Dispose();
+            }
+            if (editedPicBox.Image != null)
+            {
+                editedPicBox.Image.Dispose();
+            }
+            if (pictureBox2.Image != null)
+            {
+                pictureBox2.Image.Dispose();
+            }
+            if (originalPicBox.Image != null)
+            {
+                originalPicBox.Image.Dispose();
+            }
+        }
+        #endregion
+
+        #region Additional Helper Methods
+
+        // Method to refresh devices manually (you can call this from a button)
+        private void refreshDevicesBtn_Click(object sender, EventArgs e)
+        {
+            RefreshDevices();
+        }
+
+        // Method to test if a specific device works
+        private void TestDevice(int deviceIndex)
+        {
+            if (devices == null || deviceIndex >= devices.Length) return;
+
+            try
+            {
+                Device testDevice = devices[deviceIndex];
+                testDevice.ShowWindow(originalPicBox);
+                System.Threading.Thread.Sleep(1000);
+                testDevice.Stop();
+                MessageBox.Show($"Device {testDevice.Name} appears to be working.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Device test failed: {ex.Message}");
+            }
+        }
+
+        // Enhanced error logging for debugging
+        private void LogError(string methodName, Exception ex)
+        {
+            string errorMessage = $"[{DateTime.Now}] Error in {methodName}: {ex.Message}";
+            Console.WriteLine(errorMessage);
+
+            // You can also write to a log file if needed
+            // System.IO.File.AppendAllText("webcam_errors.log", errorMessage + Environment.NewLine);
+        }
+
+        #endregion
+
+        private void Form1_Load_1(object sender, EventArgs e)
+        {
+
         }
     }
 }
