@@ -18,6 +18,12 @@ namespace ImageProcessingActivity
         private System.Windows.Forms.Timer webcamTimer;
         private bool isWebcamRunning = false;
 
+        // Color scheme:
+        // Primary color: Teal (64,128,128) - used for main action buttons
+        // Secondary color: Lighter Teal (80,160,160) - used for image processing buttons
+        // Background: Light Gray (240,240,240) - clean, modern look
+        // Text: White - for good contrast on colored buttons
+
         public Form1()
         {
             InitializeComponent();
@@ -911,7 +917,8 @@ namespace ImageProcessingActivity
 
         private void Form1_Load_1(object sender, EventArgs e)
         {
-
+            // Set the form title
+            this.Text = "Image Processing Studio";
         }
     }
 }
