@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,12 +20,6 @@ namespace ImageProcessingActivity
         private Device currentDevice; //Track Device
         private System.Windows.Forms.Timer webcamTimer;
         private bool isWebcamRunning = false;
-
-        // Color scheme:
-        // Primary color: Teal (64,128,128) - used for main action buttons
-        // Secondary color: Lighter Teal (80,160,160) - used for image processing buttons
-        // Background: Light Gray (240,240,240) - clean, modern look
-        // Text: White - for good contrast on colored buttons
 
         public Form1()
         {
@@ -75,7 +72,38 @@ namespace ImageProcessingActivity
                                $"3. Run as administrator");
             }
         }
+        #endregion
 
+        #region Helper method 
+        //Helper method to apply filter safely.
+        private void ApplyFilter(Func<Bitmap, bool> filterFunc) //Takes a function that applies filter to bitmap, returns bool
+        {
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+
+            if (originalPicBox.Image.Width < 3 || originalPicBox.Height < 3)
+            {
+                MessageBox.Show("Image is too small for filter!");
+                return;
+            }
+
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image); //Makes copy of original image
+            bool success = filterFunc(processedBitmap); //this calls the passed filter function
+
+            if (success)
+            {
+                editedPicBox.Image = processedBitmap; //sets result to edited box
+                editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            }
+            else
+            {
+                MessageBox.Show("Filter failed! Check matrix values.");
+                processedBitmap.Dispose(); //frees memory if failed
+            }
+        }
         #endregion
 
         #region Load Image A Button
@@ -109,6 +137,48 @@ namespace ImageProcessingActivity
         #endregion
 
         #region Copy Button
+
+        private void Copy(Bitmap src, Bitmap dst)
+        {
+            int srcHeight = src.Height;
+            int srcWidth = src.Width;
+
+            BitmapData bmLoaded = src.LockBits(
+                new Rectangle(0, 0, srcWidth, srcHeight),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            BitmapData bmProcessed = dst.LockBits(
+                new Rectangle(0, 0, dst.Width, dst.Height),
+                ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            unsafe
+            {
+                int offSet = bmLoaded.Stride - srcWidth * 3; // Padding value
+
+                byte* pLoaded = (byte*)bmLoaded.Scan0;
+                byte* pProcessed = (byte*)bmProcessed.Scan0;
+
+                for (int i = 0; i < srcHeight; i++)
+                {
+                    for (int j = 0; j < srcWidth; j++)
+                    {
+                        pProcessed[0] = pLoaded[0];
+                        pProcessed[1] = pLoaded[1];
+                        pProcessed[2] = pLoaded[2];
+
+                        pLoaded += 3;
+                        pProcessed += 3;
+                    }
+
+                    pLoaded += offSet;
+                    pProcessed += offSet;
+
+                }
+            }
+
+            src.UnlockBits(bmLoaded);
+            dst.UnlockBits(bmProcessed);
+        }
         private void copyBtn_Click(object sender, EventArgs e)
         {
             //Step 1: Check if we have an image to copy
@@ -120,34 +190,12 @@ namespace ImageProcessingActivity
 
             try
             {
-                // Use LockBits for faster copying
-                Bitmap originalBitmap = new Bitmap(originalPicBox.Image);
-                Bitmap copiedBitmap = new Bitmap(originalBitmap.Width, originalBitmap.Height);
+                Bitmap loaded = new Bitmap(originalPicBox.Image);
+                Bitmap processed = new Bitmap(loaded.Width, loaded.Height);
 
-                // Define the rectangle to lock
-                Rectangle rect = new Rectangle(0, 0, originalBitmap.Width, originalBitmap.Height);
+                Copy(loaded, processed);
 
-                // Lock the bitmap data
-                System.Drawing.Imaging.BitmapData sourceData = originalBitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, originalBitmap.PixelFormat);
-                System.Drawing.Imaging.BitmapData destData = copiedBitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, copiedBitmap.PixelFormat);
-
-                // Get the address of the first line
-                IntPtr sourcePtr = sourceData.Scan0;
-                IntPtr destPtr = destData.Scan0;
-
-                // Calculate the number of bytes to copy
-                int bytes = Math.Abs(sourceData.Stride) * originalBitmap.Height;
-
-                // Copy the RGB values using System.Runtime.InteropServices.Marshal
-                System.Runtime.InteropServices.Marshal.Copy(sourcePtr, new byte[bytes], 0, bytes);
-                System.Runtime.InteropServices.Marshal.Copy(new byte[bytes], 0, destPtr, bytes);
-
-                // Unlock the bitmap data
-                originalBitmap.UnlockBits(sourceData);
-                copiedBitmap.UnlockBits(destData);
-
-                //Step 5: Display the copied image
-                editedPicBox.Image = copiedBitmap;
+                editedPicBox.Image = processed;
                 editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
             }
             catch (Exception ex)
@@ -920,5 +968,206 @@ namespace ImageProcessingActivity
             // Set the form title
             this.Text = "Image Processing Studio";
         }
+
+
+        #region Convolution Filter Buttons
+
+        // Smooth Filter
+        private void smoothBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.Smooth(processedBitmap, 1);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Sharpen Filter
+        private void sharpenBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.Sharpen(processedBitmap, 11);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Mean Removal Filter
+        private void meanRemovalBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.MeanRemoval(processedBitmap, 9);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Gaussian Blur Filter
+        private void gaussianBlurBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.GaussianBlur(processedBitmap, 4);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Emboss Laplacian
+        private void embossLaplacianBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EmbossLaplacian(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Emboss Horizontal/Vertical
+        private void embossHorzVertBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EmbossHorzVertical(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Emboss All Directions
+        private void embossAllDirBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EmbossAllDirections(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Emboss Lossy
+        private void embossLossyBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EmbossLossy(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Emboss Horizontal Only
+        private void embossHorizBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EmbossHorizontal(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Emboss Vertical Only
+        private void embossVertBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EmbossVertical(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Edge Detection - Sobel
+        private void edgeSobelBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EdgeDetectSobel(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Edge Detection - Prewitt
+        private void edgePrewittBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EdgeDetectPrewitt(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+
+        // Edge Detection - Kirsch
+        private void edgeKirschBtn_Click(object sender, EventArgs e)
+        {
+            ;
+            if (originalPicBox.Image == null)
+            {
+                MessageBox.Show("Please load an image first!");
+                return;
+            }
+            Bitmap processedBitmap = new Bitmap(originalPicBox.Image);
+            ConvolutionFilter.EdgeDetectKirsch(processedBitmap);
+            editedPicBox.Image = processedBitmap;
+            editedPicBox.SizeMode = PictureBoxSizeMode.StretchImage;
+        }
+        #endregion
+
     }
+
 }
